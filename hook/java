@@ -1,0 +1,27 @@
+#!/bin/sh
+# 开机自启入口
+# osgid 会以 osgi 用户反复拉起本程序（检测到 java 未运行就重启一次）
+# 所以这里只做"首次执行"，避免重复跑用户脚本
+BOOT=/usr/plugin/startup.sh
+LOG=/usr/plugin/boot_hook.log
+
+if [ ! -f /tmp/.boot_hook_done ]; then
+    echo "===== $(date) hook start uid=$(id -u) =====" >> $LOG
+    if [ -x "$BOOT" ]; then
+        "$BOOT" >> $LOG 2>&1 &
+        echo "launched $BOOT" >> $LOG
+    else
+        echo "missing or not exec: $BOOT" >> $LOG
+    fi
+    if [ -x /mnt/usb1_1/startup.sh ]; then
+        /mnt/usb1_1/startup.sh >> $LOG 2>&1 &
+        echo "launched usb startup.sh" >> $LOG
+    fi
+    : > /tmp/.boot_hook_done
+    echo "===== $(date) hook done =====" >> $LOG
+fi
+
+# 若要保留原生 Java 插件功能，取消下一行注释（会真正启动 JVM）
+# exec /usr/java/bin/java_renamed "$@"
+
+exit 1

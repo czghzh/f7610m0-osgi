@@ -1,0 +1,3 @@
+# 二进制镜像与编译产物
+*.img binary
+rootsh binary
