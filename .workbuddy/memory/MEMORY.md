@@ -31,7 +31,9 @@
   **开机自启已落地**：`/CuInform/CuInformLoader` 换壳（overlayfs upper 在 ubifs），
   链 `壳 → setsid hook.sh → user.sh → exec CuInformLoader.real`，uptime≈75 秒触发。
   部署件 `f7610u/boot/`，设备侧 `/opt/cu/apps/mystuff/`，参数见下面「统一参数」。
-  推仓库走 SSH：`git push git@github.com:czghzh/f7610u.git main:main`（HTTPS 无凭据）。
+  **成果入库 `git@github.com:czghzh/f7610m0-osgi.git`**（`deploy/boot-f7610u/`）。
+  注意别和 `czghzh/f7610u`（GPON 驱动源码）搞混——那个跟开机自启无关，别往里推。
+  推送走 SSH（HTTPS 无凭据）。
 - **统一参数（只改这四个）**：`nf_conntrack_max=30000`、`nf_conntrack_buckets=30208`、
   `ip_local_port_range=1024-65535`、`nf_conntrack_tcp_timeout_established=3600`。
   其余 conntrack 超时参数一律保持机器默认，脚本里不出现、不读写。
