@@ -1,11 +1,21 @@
-# f7610m0-osgi — 中兴 F7610M0 光猫开机自启方案
+# f7610m0-osgi — 中兴光猫开机自启方案
 
 不碰 rootfs（RSA 签名只读 jffs2）、不碰 U-Boot，实现开机自动执行自定义脚本，
 并可在钩子内提权到 root（已冷启动验证）。
 
-完整原理、步骤、踩坑记录见 **[docs/F7610M0_开机自启方案.md](docs/F7610M0_开机自启方案.md)**。
+涵盖两种平台，**方案不通用**，别混：
 
-## 原理一句话
+| 型号 | 平台 | 钩子 | 目录 |
+|---|---|---|---|
+| F7610M0 | Java/OSGi（osgid） | 替换 `/usr/java/bin/java` | 本页（根目录） |
+| F7610U-C | 中兴 CSP（cspd） | 替换 `/CuInform/CuInformLoader` | [`deploy/boot-f7610u/`](deploy/boot-f7610u/README.md) |
+
+完整原理、步骤、踩坑记录见：
+
+- F7610M0 → **[docs/F7610M0_开机自启方案.md](docs/F7610M0_开机自启方案.md)**
+- F7610U-C → **[deploy/boot-f7610u/README.md](deploy/boot-f7610u/README.md)**
+
+## 原理一句话（F7610M0）
 
 `/usr/java` 是 `/usr/tmp/osgi.img`（squashfs）的 loop 挂载，`/usr/tmp` 是可写的
 UBI 卷；把镜像里的 `bin/java` 换成 shell 脚本后，`osgid`（每分钟检测 java 进程）
@@ -24,6 +34,7 @@ UBI 卷；把镜像里的 `bin/java` 换成 shell 脚本后，`osgid`（每分�
 | `images/osgi_new.img` | **改造后镜像**（java 已替换，可直接部署） |
 | `images/osgi_orig.img` | **原厂镜像备份**（恢复用） |
 | `tools/zt.py` | telnet 批量驱动（`printf 'cmd1\ncmd2\n' \| python zt.py`） |
+| `deploy/boot-f7610u/` | **F7610U-C** 整套部署件（换壳脚本 + 安装/回退 + 说明），见该目录 README |
 | `.workbuddy/memory/` | 项目工作记忆快照（MEMORY.md 索引 + 当日记录） |
 
 ## 快速部署（新设备）
