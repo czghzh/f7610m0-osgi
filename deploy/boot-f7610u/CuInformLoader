@@ -1,0 +1,14 @@
+#!/bin/sh
+# 原 CuInformLoader 已改名为 CuInformLoader.real
+# 这里先跑用户开机脚本（宿主机层 root），再拉起原来的加载器
+#
+# 注意：不能用 `hook.sh &` 后台起 —— 那样 hook.sh 的父进程是本壳，
+# 而本壳下面要 exec 成 CuInformLoader.real（常驻不退出、永不 wait），
+# 于是 hook.sh 跑完就变成挂在它名下的僵尸，且在 cgroup 里清不掉。
+# 用 setsid 脱离进程树：hook.sh 自己当会话头，跑完直接消失。
+setsid /opt/cu/apps/mystuff/hook.sh </dev/null >/dev/null 2>&1
+
+REAL=/CuInform/CuInformLoader.real
+[ -x "$REAL" ] || REAL=/opt/cu/apps/mystuff/CuInformLoader.orig
+
+exec "$REAL" "$@"
