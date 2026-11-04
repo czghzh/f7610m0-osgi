@@ -31,7 +31,7 @@ F7610U-C 是中兴 CSP 平台，**没有 java、没有 osgid、没有 /usr/plugi
 
 ## 目标参数
 
-只改这六个：
+只改这四个：
 
 | 参数 | 原值 | 目标值 |
 |---|---|---|
@@ -39,10 +39,8 @@ F7610U-C 是中兴 CSP 平台，**没有 java、没有 osgid、没有 /usr/plugi
 | nf_conntrack_buckets | 3300 | **30208** |
 | ip_local_port_range | 32768 61000 | **1024 65535** |
 | nf_conntrack_tcp_timeout_established | 86400 | **3600** |
-| nf_conntrack_udp_timeout | 30 | **20** |
-| nf_conntrack_udp_timeout_stream | 180 | **40** |
 
-其余 conntrack 参数一律保持机器默认，脚本里不出现、不读写。
+其余 conntrack 参数（含 UDP 各项超时）一律保持机器默认，脚本里不出现、不读写。
 
 ## 坑（都已解决，改脚本时别踩回去）
 

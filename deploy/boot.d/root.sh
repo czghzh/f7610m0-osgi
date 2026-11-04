@@ -22,13 +22,5 @@ echo 3600 > /proc/sys/net/netfilter/nf_conntrack_tcp_timeout_established \
     && echo "tcp_timeout_established = $(cat /proc/sys/net/netfilter/nf_conntrack_tcp_timeout_established)" \
     || echo "tcp_timeout_established 设置失败"
 
-# ---- PCDN：UDP 超时 30 -> 20（无回应单包），180 -> 40（双向流）----
-echo 20 > /proc/sys/net/netfilter/nf_conntrack_udp_timeout \
-    && echo "udp_timeout = $(cat /proc/sys/net/netfilter/nf_conntrack_udp_timeout)" \
-    || echo "udp_timeout 设置失败"
-echo 40 > /proc/sys/net/netfilter/nf_conntrack_udp_timeout_stream \
-    && echo "udp_timeout_stream = $(cat /proc/sys/net/netfilter/nf_conntrack_udp_timeout_stream)" \
-    || echo "udp_timeout_stream 设置失败"
-
 echo "===== $(date) root.sh done ====="
 } >> $LOG

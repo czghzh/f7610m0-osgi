@@ -6,14 +6,12 @@
 # 日志  ：/opt/cu/apps/mystuff/boot.log (每次开机覆盖写一小段)
 # 回退  ：sh /opt/cu/apps/mystuff/rollback.sh  然后重启
 #
-# 只改六个参数：
+# 只改四个参数：
 #   1. nf_conntrack_max                16000 -> 30000
 #   2. nf_conntrack_buckets            3300  -> 30208
 #   3. ip_local_port_range             32768 61000 -> 1024 65535
 #   4. nf_conntrack_tcp_timeout_established  86400 -> 3600
-#   5. nf_conntrack_udp_timeout        30 -> 20
-#   6. nf_conntrack_udp_timeout_stream 180 -> 40
-# 其余 conntrack 超时参数一律保持机器默认，不碰。
+# 其余 conntrack 超时参数（含 UDP 各项）一律保持机器默认，不碰。
 # ============================================================
 
 echo "[user.sh] start, uptime=$(sed 's/ .*//' /proc/uptime)"
@@ -61,25 +59,10 @@ if [ -w $T ]; then
     echo 3600 > $T && echo "   now = $(cat $T)"
 fi
 
-# ---- 5. UDP 无回应单包超时 ----
-U=$NF/nf_conntrack_udp_timeout
-if [ -w $U ]; then
-    echo "udp_timeout: $(cat $U) -> 20"
-    echo 20 > $U && echo "   now = $(cat $U)"
-fi
-
-# ---- 6. UDP 双向流超时 ----
-US=$NF/nf_conntrack_udp_timeout_stream
-if [ -w $US ]; then
-    echo "udp_timeout_stream: $(cat $US) -> 40"
-    echo 40 > $US && echo "   now = $(cat $US)"
-fi
-
 # ---- 生效结果汇总 ----
 echo "--- 最终值 ---"
 for f in nf_conntrack_max nf_conntrack_count nf_conntrack_buckets \
-         nf_conntrack_tcp_timeout_established \
-         nf_conntrack_udp_timeout nf_conntrack_udp_timeout_stream; do
+         nf_conntrack_tcp_timeout_established; do
     [ -r $NF/$f ] && echo "  $f = $(cat $NF/$f)"
 done
 [ -r $P ] && echo "  ip_local_port_range = $(cat $P | tr '\n' ' ')"
@@ -94,9 +77,7 @@ echo "[user.sh] done"
   echo "----- 延时复查 uptime=$(sed 's/ .*//' /proc/uptime) -----" >> $D_SH/boot.log
   [ "$(cat $NF/nf_conntrack_max 2>/dev/null)" = "30000" ] || { echo 30000 > $NF/nf_conntrack_max; echo "补设 nf_conntrack_max=30000" >> $D_SH/boot.log; }
   [ "$(cat $T 2>/dev/null)" = "3600" ] || { echo 3600 > $T; echo "补设 tcp_timeout_established=3600" >> $D_SH/boot.log; }
-  [ "$(cat $U 2>/dev/null)" = "20" ] || { echo 20 > $U; echo "补设 udp_timeout=20" >> $D_SH/boot.log; }
-  [ "$(cat $US 2>/dev/null)" = "40" ] || { echo 40 > $US; echo "补设 udp_timeout_stream=40" >> $D_SH/boot.log; }
-  echo "  复查后：max=$(cat $NF/nf_conntrack_max) buckets=$(cat $NF/nf_conntrack_buckets) tcp_est=$(cat $T) udp=$(cat $U) udp_stream=$(cat $US)" >> $D_SH/boot.log
+  echo "  复查后：max=$(cat $NF/nf_conntrack_max) buckets=$(cat $NF/nf_conntrack_buckets) tcp_est=$(cat $T)" >> $D_SH/boot.log
   echo "----- 复查结束 -----" >> $D_SH/boot.log
 ) >/dev/null 2>&1 &
 
