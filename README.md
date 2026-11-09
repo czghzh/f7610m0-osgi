@@ -30,7 +30,7 @@ UBI 卷；把镜像里的 `bin/java` 换成 shell 脚本后，`osgid`（每分�
 | `rootsh/rootsh.c` | setuid root 执行器源码（静态 aarch64） |
 | `rootsh/rootsh` | 已编译二进制（598KB，直接可用） |
 | `deploy/startup.sh` | osgi 身份开机脚本模板（设备端 `/usr/plugin/startup.sh`） |
-| `deploy/boot.d/root.sh` | root 身份开机脚本模板（设备端 `/usr/plugin/boot.d/root.sh`，含 conntrack 30000） |
+| `deploy/boot.d/root.sh` | root 身份开机脚本模板（设备端 `/usr/plugin/boot.d/root.sh`，含 conntrack 30720/30720 + UDP 20/40） |
 | `images/osgi_new.img` | **改造后镜像**（java 已替换，可直接部署） |
 | `images/osgi_orig.img` | **原厂镜像备份**（恢复用） |
 | `tools/zt.py` | telnet 批量驱动（`printf 'cmd1\ncmd2\n' \| python zt.py`） |

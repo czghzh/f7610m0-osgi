@@ -34,11 +34,17 @@
   **成果入库 `git@github.com:czghzh/f7610m0-osgi.git`**（`deploy/boot-f7610u/`）。
   注意别和 `czghzh/f7610u`（GPON 驱动源码）搞混——那个跟开机自启无关，别往里推。
   推送走 SSH（HTTPS 无凭据）。
-- **统一参数（只改这四个）**：`nf_conntrack_max=30000`、`nf_conntrack_buckets=30208`、
-  `ip_local_port_range=1024-65535`、`nf_conntrack_tcp_timeout_established=3600`。
+- **统一参数（当前基准，2026-11-09 按最新 root.sh 对齐）**：`nf_conntrack_max=30720`、
+  `nf_conntrack_buckets=30720`、`ip_local_port_range=1024-65535`、
+  `nf_conntrack_tcp_timeout_established=3600`、`nf_conntrack_udp_timeout=20`、
+  `nf_conntrack_udp_timeout_stream=40`。
+  演进：10/30 是 30000/30208 + UDP 默认 30/180；11-03 收紧 20/40 → 11-04 撤回 →
+  11-06 01:22 一度 40960/40960 → **11-06 20:10 定为上表**，四份 `root.sh` md5 全为
+  `684deef6…`；2026-11-09 随 commit `b88aca0` 入库。跳板机（Armbian）侧 11-06 已设为
+  20/40（`/etc/sysctl.d/99-custom.conf`）。
   其余 conntrack 超时参数一律保持机器默认，脚本里不出现、不读写。
-  注意：设备上若是用户临时手改的值（如某台 max 65535、est 40），**重启就会失效，不作为基准**，
-  一律按上面这组标准值部署。
+  注意：设备上临时手改的值（如某台 max 65535、est 40）**重启即失效，不作为基准**，
+  一律按上表部署；30000/30208 只作历史记录，详见 `docs/F7610M0_开机自启方案.md` §九。
 - **大文件传输经验**：TFTP 极慢（停等协议，RTT 500ms 时只有 900 B/s），别用。
   改用自研静态工具 `tools/uploader`(设备→主机) / `downloader`(主机→设备) + `receiver.py`/`sender.py`，
   设备上已常驻 `/usr/plugin/{uploader,downloader}`。注意设备 `/tmp` 只有 15MB，
@@ -57,7 +63,7 @@
 | 主题 | 详情 |
 |---|---|
 | 光猫开机自启脚本（已实施并验证） | [`F7610M0_开机自启方案.md`](../../F7610M0_开机自启方案.md) |
-| 钩子内 root 提权（rootsh）与 conntrack 30000 | 同上文档 §5.5 |
+| 钩子内 root 提权（rootsh）与 conntrack 参数集 | 同上文档 §5.5、§九 |
 | 同上的可复用操作流程 | 技能 `~/.workbuddy/skills/zte-ont-boot-hook/SKILL.md` |
 
 ## 工作区里的常用件
@@ -75,4 +81,4 @@
 
 开机钩子（osgid→java 脚本→`/usr/plugin/startup.sh`）已生效，并通过
 `/userconfig/rootsh`(setuid) 提权，在开机约 2 分钟内自动把 conntrack
-max/buckets 调到 30000（日志 `/usr/plugin/root.log`）。
+max/buckets 调到 30720（日志 `/usr/plugin/root.log`）。
