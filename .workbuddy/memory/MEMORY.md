@@ -72,11 +72,11 @@
 
 ## 工作区里的常用件
 
-> **2026-11-09 起全部内容已入库 `git@github.com:czghzh/f7610m0-osgi`（public），
-> 工作区 ↔ 仓库逐文件校验 580/580 一致。路径映射见
-> [`F7610M0_开机自启方案.md`](../../F7610M0_开机自启方案.md) §七对应表。**
-> 仓库侧布局：`images/`（四个镜像）、`unpacked/`（两个解包目录）、`tools/`（全部自研脚本）、
-> `run-logs/`（部署日志）、`third_party/f7610u/`（第三方源码快照）、`docs/`（文档副本）。
+> **2026-11-09 起内容入库 `git@github.com:czghzh/f7610m0-osgi`（public）。**
+> 仓库侧布局：`images/`（**只有两个改造后镜像** osgi_new.img / osgi_c_new.img）、`tools/`（全部自研脚本）、
+> `run-logs/`（部署日志）、`docs/`（文档副本）、`deploy/` `rootsh/`。
+> **不入库**（体积大或另有出处）：原厂镜像（`/srv/tftp/osgi.img`、`osgi_c.img`）、
+> 解包目录（`osgi_root/`、`osgi_root_c/`）、GPON 源码（独立仓库 `czghzh/f7610u`）。
 > 工作区根是编辑源，仓库是入库副本 —— 改完工作区要 cp 过去再提交，否则重新分叉。
 
 | 路径 | 用途 |
