@@ -6,12 +6,14 @@
 # 日志  ：/opt/cu/apps/mystuff/boot.log (每次开机覆盖写一小段)
 # 回退  ：sh /opt/cu/apps/mystuff/rollback.sh  然后重启
 #
-# 只改四个参数：
-#   1. nf_conntrack_max                16000 -> 30000
-#   2. nf_conntrack_buckets            3300  -> 30208
+# 按 2026-11-09 统一基准改六项（与 F7610M0 的 root.sh 一致）：
+#   1. nf_conntrack_max                16000 -> 30720
+#   2. nf_conntrack_buckets            3300  -> 30720 (60×512，写多少读多少)
 #   3. ip_local_port_range             32768 61000 -> 1024 65535
 #   4. nf_conntrack_tcp_timeout_established  86400 -> 3600
-# 其余 conntrack 超时参数（含 UDP 各项）一律保持机器默认，不碰。
+#   5. nf_conntrack_udp_timeout             30 -> 20
+#   6. nf_conntrack_udp_timeout_stream      180 -> 40
+# 其余 conntrack 超时参数一律保持机器默认，不碰。
 # ============================================================
 
 echo "[user.sh] start, uptime=$(sed 's/ .*//' /proc/uptime)"
@@ -29,18 +31,19 @@ done
 
 # ---- 1. conntrack 上限 ----
 if [ -w $NF/nf_conntrack_max ]; then
-    echo "nf_conntrack_max: $(cat $NF/nf_conntrack_max) -> 30000"
-    echo 30000 > $NF/nf_conntrack_max && echo "   now = $(cat $NF/nf_conntrack_max)"
+    echo "nf_conntrack_max: $(cat $NF/nf_conntrack_max) -> 30720"
+    echo 30720 > $NF/nf_conntrack_max && echo "   now = $(cat $NF/nf_conntrack_max)"
 else
     echo "!! nf_conntrack_max 不存在或不可写，跳过"
 fi
 
 # ---- 2. 哈希桶 ----
 # 桶数只能在条目数为 0 时改，否则 EBUSY
+# 30720 = 60×512，写 512 的整数倍才能"写多少读多少"
 H=/sys/module/nf_conntrack/parameters/hashsize
 if [ -w $H ]; then
-    echo "hashsize: $(cat $H) -> 30208 (count=$(cat $NF/nf_conntrack_count 2>/dev/null))"
-    echo 30208 > $H && echo "   now = $(cat $H)"
+    echo "hashsize: $(cat $H) -> 30720 (count=$(cat $NF/nf_conntrack_count 2>/dev/null))"
+    echo 30720 > $H && echo "   now = $(cat $H)"
 else
     echo "!! hashsize 不可写，跳过"
 fi
@@ -59,10 +62,23 @@ if [ -w $T ]; then
     echo 3600 > $T && echo "   now = $(cat $T)"
 fi
 
+# ---- 5/6. UDP 超时（2026-11-06 加回，2026-11-09 与 F7610M0 对齐）----
+U=$NF/nf_conntrack_udp_timeout
+US=$NF/nf_conntrack_udp_timeout_stream
+if [ -w $U ]; then
+    echo "udp_timeout: $(cat $U) -> 20"
+    echo 20 > $U && echo "   now = $(cat $U)"
+fi
+if [ -w $US ]; then
+    echo "udp_timeout_stream: $(cat $US) -> 40"
+    echo 40 > $US && echo "   now = $(cat $US)"
+fi
+
 # ---- 生效结果汇总 ----
 echo "--- 最终值 ---"
 for f in nf_conntrack_max nf_conntrack_count nf_conntrack_buckets \
-         nf_conntrack_tcp_timeout_established; do
+         nf_conntrack_tcp_timeout_established nf_conntrack_udp_timeout \
+         nf_conntrack_udp_timeout_stream; do
     [ -r $NF/$f ] && echo "  $f = $(cat $NF/$f)"
 done
 [ -r $P ] && echo "  ip_local_port_range = $(cat $P | tr '\n' ' ')"
@@ -75,9 +91,11 @@ echo "[user.sh] done"
 (
   sleep 90
   echo "----- 延时复查 uptime=$(sed 's/ .*//' /proc/uptime) -----" >> $D_SH/boot.log
-  [ "$(cat $NF/nf_conntrack_max 2>/dev/null)" = "30000" ] || { echo 30000 > $NF/nf_conntrack_max; echo "补设 nf_conntrack_max=30000" >> $D_SH/boot.log; }
+  [ "$(cat $NF/nf_conntrack_max 2>/dev/null)" = "30720" ] || { echo 30720 > $NF/nf_conntrack_max; echo "补设 nf_conntrack_max=30720" >> $D_SH/boot.log; }
   [ "$(cat $T 2>/dev/null)" = "3600" ] || { echo 3600 > $T; echo "补设 tcp_timeout_established=3600" >> $D_SH/boot.log; }
-  echo "  复查后：max=$(cat $NF/nf_conntrack_max) buckets=$(cat $NF/nf_conntrack_buckets) tcp_est=$(cat $T)" >> $D_SH/boot.log
+  [ "$(cat $U 2>/dev/null)" = "20" ] || { echo 20 > $U; echo "补设 udp_timeout=20" >> $D_SH/boot.log; }
+  [ "$(cat $US 2>/dev/null)" = "40" ] || { echo 40 > $US; echo "补设 udp_timeout_stream=40" >> $D_SH/boot.log; }
+  echo "  复查后：max=$(cat $NF/nf_conntrack_max) buckets=$(cat $NF/nf_conntrack_buckets) tcp_est=$(cat $T) udp=$(cat $U)/$(cat $US)" >> $D_SH/boot.log
   echo "----- 复查结束 -----" >> $D_SH/boot.log
 ) >/dev/null 2>&1 &
 

@@ -31,16 +31,20 @@ F7610U-C 是中兴 CSP 平台，**没有 java、没有 osgid、没有 /usr/plugi
 
 ## 目标参数
 
-只改这四个：
+按 2026-11-09 统一基准改六项（与 F7610M0 的 `root.sh` 一致）：
 
 | 参数 | 原值 | 目标值 |
 |---|---|---|
-| nf_conntrack_max | 16000 | **30000** |
-| nf_conntrack_buckets | 3300 | **30208** |
+| nf_conntrack_max | 16000 | **30720** |
+| nf_conntrack_buckets | 3300 | **30720** |
 | ip_local_port_range | 32768 61000 | **1024 65535** |
 | nf_conntrack_tcp_timeout_established | 86400 | **3600** |
+| nf_conntrack_udp_timeout | 30 | **20** |
+| nf_conntrack_udp_timeout_stream | 180 | **40** |
 
-其余 conntrack 参数（含 UDP 各项超时）一律保持机器默认，脚本里不出现、不读写。
+30720 = 60×512，写 512 的整数倍才能让 hashsize「写多少读多少」。
+其余 conntrack 超时参数一律保持机器默认，脚本里不出现、不读写。
+延时复查（sleep 90）也会补设这六项里掉的值。
 
 ## 坑（都已解决，改脚本时别踩回去）
 
