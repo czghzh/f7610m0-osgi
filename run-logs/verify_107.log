@@ -1,0 +1,26 @@
+Warning: Permanently added '100.64.64.107' (ED25519) to the list of known hosts.
+===== 100.64.64.107 =====
+Warning: Permanently added '100.64.64.107' (ED25519) to the list of known hosts.
+trap ':' INT
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+cd /
+UP=149.79 265.95
+MAX=30720
+BUK=30720
+PR=1024 65535
+EST=3600
+UDP=20
+UDS=40
+RPS=65536
+E3C=2
+--- LOG ---
+awk '{a[NR]=$0} END{s=NR-7; for(i=s;i<=NR;i++) print a[i]}' /usr/plugin/root
+.log
+nf_conntrack_max = 30720
+nf_conntrack_buckets = 30720
+ip_local_port_range = 1024      65535
+tcp_timeout_established = 3600
+nf_conntrack_udp_timeout = 20
+nf_conntrack_udp_timeout_stream = 40
+rps_sock_flow_entries = 65536 / eth3 rps_cpus = 2
+===== Thu Jan  1 00:01:26 UTC 1970 root.sh done =====

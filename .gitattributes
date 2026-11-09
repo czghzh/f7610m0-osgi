@@ -1,3 +1,8 @@
 # 二进制镜像与编译产物
 *.img binary
 rootsh binary
+uploader binary
+downloader binary
+# 解包目录里的 jar/so/库文件
+*.jar binary
+*.so binary

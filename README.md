@@ -31,11 +31,22 @@ UBI 卷；把镜像里的 `bin/java` 换成 shell 脚本后，`osgid`（每分�
 | `rootsh/rootsh` | 已编译二进制（598KB，直接可用） |
 | `deploy/startup.sh` | osgi 身份开机脚本模板（设备端 `/usr/plugin/startup.sh`） |
 | `deploy/boot.d/root.sh` | root 身份开机脚本模板（设备端 `/usr/plugin/boot.d/root.sh`，含 conntrack 30720/30720 + UDP 20/40） |
-| `images/osgi_new.img` | **改造后镜像**（java 已替换，可直接部署） |
-| `images/osgi_orig.img` | **原厂镜像备份**（恢复用） |
+| `images/osgi_orig.img` | **原厂镜像备份**（A/B 机型原版，恢复用） |
+| `images/osgi_new.img` | **改造后镜像**（java 已替换，A/B 用，可直接部署） |
+| `images/osgi_c.img` | **原厂镜像备份**（C/D/E/F 机型原版，`8fd834cd…`） |
+| `images/osgi_c_new.img` | **改造后镜像**（C/D/E/F 用，`06dd73ad…`） |
+| `unpacked/osgi_root/` | A/B 版镜像解包目录（改内容后重打包用） |
+| `unpacked/osgi_root_c/` | C/D/E/F 版镜像解包目录 |
+| `tools/` | 自研 telnet 驱动、批量部署/巡检脚本、MTD 备份（`tools/mtd-backup/`） |
 | `tools/zt.py` | telnet 批量驱动（`printf 'cmd1\ncmd2\n' \| python zt.py`） |
+| `run-logs/` | 各设备批量部署/校验/重启日志（2026-11-06 那一批） |
+| `third_party/f7610u/` | ZX279131 GPON 驱动 + ImmortalWrt 移植源码快照（源自 `czghzh/f7610u`，commit `b85e2b8`） |
 | `deploy/boot-f7610u/` | **F7610U-C** 整套部署件（换壳脚本 + 安装/回退 + 说明），见该目录 README |
+| `docs/` | 完整方案文档（主文档 + MTD 备份） |
 | `.workbuddy/memory/` | 项目工作记忆快照（MEMORY.md 索引 + 当日记录） |
+
+> ⚠️ 本仓库为 **public**，`tools/` 与 `run-logs/` 中含 telnet 密码与跳板/Tailscale 地址，
+> 按项目决定原样入库以便完整复现。如需轮换密码请同步更新对应脚本。
 
 ## 快速部署（新设备）
 
@@ -63,10 +74,12 @@ UBI 卷；把镜像里的 `bin/java` 换成 shell 脚本后，`osgid`（每分�
 ## 从源码重建镜像
 
 ```sh
-unsquashfs -d osgi_root images/osgi_orig.img
-cp hook/java osgi_root/bin/java && chmod 755 osgi_root/bin/java
-mksquashfs osgi_root osgi_new.img -comp xz -b 131072 -noappend
+unsquashfs -d unpacked/osgi_root images/osgi_orig.img
+cp hook/java unpacked/osgi_root/bin/java && chmod 755 unpacked/osgi_root/bin/java
+mksquashfs unpacked/osgi_root images/osgi_new.img -comp xz -b 131072 -noappend -no-xattrs
 ```
+
+C/D/E/F 那一版同理，把 `osgi_orig` 换成 `osgi_c`、`osgi_root` 换成 `osgi_root_c`。
 
 ## 重编译 rootsh
 

@@ -1,0 +1,21 @@
+[100.64.64.206] LAN=192.168.1.151
+[100.64.64.206] Warning: Permanently added '100.64.64.206' (ED25519) to the list of known hosts.
+[100.64.64.206]   echo WRC=$?
+[100.64.64.206]   WRC=0
+[100.64.64.206]   echo SIZE=$(wc -c < /upgtempfile/root.sh)
+[100.64.64.206]   SIZE=3372
+[100.64.64.206]   echo DM5=$(md5sum /usr/plugin/boot.d/root.sh | awk '{print $1}')
+[100.64.64.206]   DM5=
+[100.64.64.206]   echo MAX=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
+[100.64.64.206]   echo BUK=$(cat /proc/sys/net/netfilter/nf_conntrack_buckets)
+[100.64.64.206]   echo PR=$(cat /proc/sys/net/ipv4/ip_local_port_range)
+[100.64.64.206]   echo EST=$(cat /proc/sys/net/netfilter/nf_conntrack_tcp_timeout_established)
+[100.64.64.206]   echo UDP=$(cat /proc/sys/net/netfilter/nf_conntrack_udp_timeout)
+[100.64.64.206]   echo UDS=$(cat /proc/sys/net/netfilter/nf_conntrack_udp_timeout_stream)
+[100.64.64.206]   echo RPS=$(cat /proc/sys/net/core/rps_sock_flow_entries)
+[100.64.64.206]   echo MAX=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
+[100.64.64.206]   echo E3C=$(cat /sys/class/net/eth3/queues/rx-0/rps_cpus)
+[100.64.64.206]   MAX=30720
+[100.64.64.206]   echo BUK=$(cat /proc/sys/net/netfilter/nf_conntrack_buckets)
+[100.64.64.206]   BUK=30720
+[100.64.64.206]   echo PR=$(cat /proc/sys/net/ipv4/ip_local_port_range)
