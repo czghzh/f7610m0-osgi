@@ -4,18 +4,18 @@ LOG=/usr/plugin/root.log
 {
 echo "===== $(date) root.sh start uid=$(awk '/Uid:/{print $2}' /proc/self/status) ====="
 
-# ---- conntrack 上限与哈希桶：40960 / 40960 ----
-echo 40960 > /proc/sys/net/netfilter/nf_conntrack_max \
+# ---- conntrack 上限与哈希桶：30720 / 30720 ----
+echo 30720 > /proc/sys/net/netfilter/nf_conntrack_max \
     && echo "nf_conntrack_max = $(cat /proc/sys/net/netfilter/nf_conntrack_max)" \
     || echo "nf_conntrack_max 设置失败"
 # hashsize 会被内核上调到 512 的整数倍（实测，内核 4.1.25 / ZX279131）：
-#   写 512 的整数倍 -> 原样保留      32768->32768  39936->39936  40448->40448
+#   写 512 的整数倍 -> 原样保留      30720->30720  32768->32768  39936->39936  40448->40448
 #                                    40960->40960  41984->41984  45056->45056
 #   写非 512 整数倍 -> 上取整        39937->40448  40192->40448  40961->41472
 # 所以 40192（78.5x512）永远读回 40448；想让写入值=回读值，就必须写 512 的倍数。
-# 40960 = 40x1024 = 80x512，写多少读多少，buckets 与 max 1:1。
+# 30720 = 30x1024 = 60x512，写多少读多少，buckets 与 max 1:1。
 # 注意：hashsize 节点只写不读（cat 报权限不够），只能用 buckets 回读校验。
-echo 40960 > /sys/module/nf_conntrack/parameters/hashsize \
+echo 30720 > /sys/module/nf_conntrack/parameters/hashsize \
     && echo "nf_conntrack_buckets = $(cat /proc/sys/net/netfilter/nf_conntrack_buckets)" \
     || echo "hashsize 设置失败"
 
@@ -28,6 +28,14 @@ echo "1024 65535" > /proc/sys/net/ipv4/ip_local_port_range \
 echo 3600 > /proc/sys/net/netfilter/nf_conntrack_tcp_timeout_established \
     && echo "tcp_timeout_established = $(cat /proc/sys/net/netfilter/nf_conntrack_tcp_timeout_established)" \
     || echo "tcp_timeout_established 设置失败"
+
+# ---- conntrack UDP 超时：默认 30/180 -> 20/40（2026-11-06 按用户要求加回）----
+echo 20 > /proc/sys/net/netfilter/nf_conntrack_udp_timeout \
+    && echo "nf_conntrack_udp_timeout = $(cat /proc/sys/net/netfilter/nf_conntrack_udp_timeout)" \
+    || echo "nf_conntrack_udp_timeout 设置失败"
+echo 40 > /proc/sys/net/netfilter/nf_conntrack_udp_timeout_stream \
+    && echo "nf_conntrack_udp_timeout_stream = $(cat /proc/sys/net/netfilter/nf_conntrack_udp_timeout_stream)" \
+    || echo "nf_conntrack_udp_timeout_stream 设置失败"
 
 # ---- RPS：收包软处理推给 CPU1（flow 表 65536，eth0~eth3）----
 # rps_* 走的是 roundup_pow_of_two（向上取整到 2 的幂），写 40192 会变成 65536；
